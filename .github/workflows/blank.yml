@@ -1,0 +1,39 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-web-server:
+    name: Test Web-Server Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4                         # :contentReference[oaicite:4]{index=4}
+      - name: Set up Python
+        uses: actions/setup-python@v5                     # :contentReference[oaicite:5]{index=5}
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest tests/
+
+  terraform:
+    name: Terraform Plan & Apply
+    needs: test-web-server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4                         # :contentReference[oaicite:6]{index=6}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3                # :contentReference[oaicite:7]{index=7}
+      - name: Terraform Init
+        run: terraform init -input=false
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve tfplan
